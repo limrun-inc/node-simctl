@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import which from 'which';
+import { Ios, Limrun } from '@limrun/api';
 import { log, LOG_PREFIX } from './logger';
 import {
   DEFAULT_EXEC_TIMEOUT, getXcrunBinary,
@@ -43,12 +44,27 @@ export class Simctl {
   private _udid: string | null;
   private _devicesSetPath: string | null;
 
+  /**
+   * The main Limrun instance client.
+   */
+  private _lim: Ios.InstanceClient;
+  private _limInstanceApiUrl: string;
+  private _limInstanceToken: string;
+
   constructor (opts: SimctlOpts = {}) {
     this.xcrun = _.cloneDeep(opts.xcrun ?? { path: null });
     this.execTimeout = opts.execTimeout ?? DEFAULT_EXEC_TIMEOUT;
     this.logErrors = opts.logErrors ?? true;
     this._udid = opts.udid ?? null;
     this._devicesSetPath = opts.devicesSetPath ?? null;
+    if (!opts.limInstanceApiUrl) {
+      throw new Error('limInstanceApiUrl is required');
+    }
+    if (!opts.limInstanceToken) {
+      throw new Error('limInstanceToken is required');
+    }
+    this._limInstanceApiUrl = opts.limInstanceApiUrl;
+    this._limInstanceToken = opts.limInstanceToken;
   }
 
   set udid (value: string | null) {
@@ -100,6 +116,25 @@ export class Simctl {
     return this.xcrun.path;
   }
 
+  async requireLimClient(createNew = false): Promise<Ios.InstanceClient> {
+    if (this._lim && !createNew) {
+      return this._lim;
+    }
+    if (createNew) {
+      return Ios.createInstanceClient({
+        apiUrl: this._limInstanceApiUrl,
+        token: this._limInstanceToken,
+        logLevel: 'debug',
+      });
+    }
+    this._lim = await Ios.createInstanceClient({
+      apiUrl: this._limInstanceApiUrl,
+      token: this._limInstanceToken,
+      logLevel: 'debug',
+    });
+    return this._lim;
+  }
+
   /**
    * Execute the particular simctl command.
    *
@@ -125,8 +160,6 @@ export class Simctl {
     } = opts ?? {} as T;
     // run a particular simctl command
     const args = [
-      'simctl',
-      ...(this.devicesSetPath ? ['--set', this.devicesSetPath] : []),
       subcommand,
       ...initialArgs
     ];
@@ -138,26 +171,17 @@ export class Simctl {
       process.env
     );
 
-    const execOpts: any = {
-      env,
-      encoding,
-    };
-    if (!asynchronous) {
-      execOpts.timeout = timeout || this.execTimeout;
-    }
-    const xcrun = await this.requireXcrun();
+    // const execOpts: any = {
+    //   env,
+    //   encoding,
+    // };
+    // if (!asynchronous) {
+    //   execOpts.timeout = timeout || this.execTimeout;
+    // }
+    const lim = await this.requireLimClient(asynchronous);
     try {
-      let execArgs: [string, string[], any];
-      if (architectures?.length) {
-        const archArgs = _.flatMap(
-          (_.isArray(architectures) ? architectures : [architectures]).map((arch) => ['-arch', arch])
-        );
-        execArgs = ['arch', [...archArgs, xcrun, ...args], execOpts];
-      } else {
-        execArgs = [xcrun, args, execOpts];
-      }
-      // We know what we are doing here - the type system can't handle the dynamic nature
-      return (asynchronous ? new SubProcess(...execArgs) : await tpExec(...execArgs)) as ExecResult<T>;
+      const execution = lim.simctl(args, { disconnectOnExit: asynchronous })
+      return (asynchronous ? execution : (await execution.wait())) as ExecResult<T>;
     } catch (e: any) {
       if (!this.logErrors || !logErrors) {
         // if we don't want to see the errors, just throw and allow the calling
