@@ -6,7 +6,7 @@
     "ios",
     "simctl"
   ],
-  "version": "8.1.1-lim.1",
+  "version": "8.1.1-lim.3",
   "author": "Appium Contributors",
   "license": "Apache-2.0",
   "repository": {
@@ -35,6 +35,7 @@
   "dependencies": {
     "@appium/logger": "^2.0.0-rc.1",
     "@limrun/api": "^0.17.1",
+    "@plist/openstep.parse": "^1.1.1",
     "asyncbox": "^4.0.1",
     "bluebird": "^3.5.1",
     "lodash": "^4.2.1",

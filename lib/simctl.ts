@@ -1,11 +1,10 @@
 import _ from 'lodash';
 import which from 'which';
-import { Ios, Limrun } from '@limrun/api';
+import { Ios } from '@limrun/api';
 import { log, LOG_PREFIX } from './logger';
 import {
   DEFAULT_EXEC_TIMEOUT, getXcrunBinary,
 } from './helpers';
-import { exec as tpExec, SubProcess } from 'teen_process';
 import * as addmediaCommands from './subcommands/addmedia';
 import * as appinfoCommands from './subcommands/appinfo';
 import * as bootCommands from './subcommands/boot';
@@ -30,6 +29,8 @@ import * as spawnCommands from './subcommands/spawn';
 import * as terminateCommands from './subcommands/terminate';
 import * as uiCommands from './subcommands/ui';
 import * as uninstallCommands from './subcommands/uninstall';
+import * as listappsCommands from './subcommands/listapps';
+import * as lsofCommands from './subcommands/lsof';
 import * as locationCommands from './subcommands/location';
 import type {
   XCRun, ExecOpts, SimctlOpts, ExecResult,
@@ -180,7 +181,7 @@ export class Simctl {
     // }
     const lim = await this.requireLimClient(asynchronous);
     try {
-      const execution = lim.simctl(args, { disconnectOnExit: asynchronous })
+      const execution = lim.simctl(args, { disconnectOnExit: asynchronous });
       return (asynchronous ? execution : (await execution.wait())) as ExecResult<T>;
     } catch (e: any) {
       if (!this.logErrors || !logErrors) {
@@ -239,6 +240,8 @@ export class Simctl {
   getContentSize = uiCommands.getContentSize;
   setContentSize = uiCommands.setContentSize;
   removeApp = uninstallCommands.removeApp;
+  listApps = listappsCommands.listApps;
+  lsof = lsofCommands.lsof;
 }
 
 export default Simctl;
