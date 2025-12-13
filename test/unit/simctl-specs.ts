@@ -34,7 +34,10 @@ describe('simctl', function () {
   let execStub: sinon.SinonStub;
 
   function stubSimctl (xcrun: { path?: string | null } = {}) {
-    const simctl = new Simctl({ xcrun: { path: xcrun.path ?? null } });
+    const simctl = new Simctl({
+      xcrun: { path: xcrun.path ?? null },
+      limClient: {} as any,
+    });
     execStub = sinon.stub(simctl, 'exec' as any).resolves({ stdout: '', stderr: '' });
     return simctl;
   }
@@ -109,6 +112,12 @@ describe('simctl', function () {
 
             const devices = await simctl.getDevices('12.1');
             expect(_.keys(devices).length).to.eql(10);
+          });
+          it('should return devices from all SDKs if exact SDK is missing', async function () {
+            execStub.returns(devicesPayload);
+
+            const devices = await simctl.getDevices('12.3');
+            expect(devices).to.have.length(16);
           });
           it('should ignore unavailable devices', async function () {
             execStub.returns(devicesWithUnavailablePayload);

@@ -11,8 +11,6 @@ import type { Simctl } from '../simctl';
  * @throws {Error} If the `udid` instance property is unset
  */
 export async function installApp (this: Simctl, appPath: string): Promise<void> {
-  await this.exec('install', {
-    args: [this.requireUdid('install'), appPath],
-  });
+  throw new Error('installApp is not supported, use lim API for app installation');
 }
 

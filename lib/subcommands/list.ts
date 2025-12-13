@@ -169,13 +169,11 @@ export async function getDevices (
   if (devices[forSdk]) {
     return devices[forSdk];
   }
-
-  let errMsg = `'${forSdk}' does not exist in the list of simctl SDKs.`;
-  const availableSDKs = _.keys(devices);
-  errMsg += availableSDKs.length
-    ? ` Only the following Simulator SDK versions are available on your system: ${availableSDKs.join(', ')}`
-    : ` No Simulator SDK versions are available on your system. Please install some via Xcode preferences.`;
-  throw new Error(errMsg);
+  // In XCode 26.3, Apple did not ship iOS SDK 26.3 but instead shipped iOS SDK 26.2
+  // even though the simulator is running iOS 26.3.1
+  // So, a case where iOS SDK not matching the simulator version is possible and expected.
+  log.debug(LOG_PREFIX, `'${forSdk}' does not exist in the list of simctl SDKs. Returning all devices.`);
+  return _.flatMap(_.values(devices));
 }
 
 /**

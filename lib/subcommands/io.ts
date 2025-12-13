@@ -1,8 +1,3 @@
-import { rimraf } from 'rimraf';
-import path from 'path';
-import os from 'os';
-import fs from 'fs/promises';
-import { uuidV4 } from '../helpers';
 import type { Simctl } from '../simctl';
 
 /**
@@ -16,15 +11,7 @@ import type { Simctl } from '../simctl';
  * @throws {Error} If the `udid` instance property is unset
  */
 export async function getScreenshot (this: Simctl): Promise<string> {
-  const udid = this.requireUdid('io screenshot');
-  const pathToScreenshotPng = path.resolve(os.tmpdir(), `${await uuidV4()}.png`);
-  try {
-    await this.exec('io', {
-      args: [udid, 'screenshot', pathToScreenshotPng],
-    });
-    return (await fs.readFile(pathToScreenshotPng)).toString('base64');
-  } finally {
-    await rimraf(pathToScreenshotPng);
-  }
+  const screenshot = await this.lim.screenshot();
+  return screenshot.base64.replace(/^data:image\/\w+;base64,/, '');
 }
 

@@ -29,8 +29,9 @@ export async function pushNotification (this: Simctl, payload: Record<string, an
   const dstPath = path.resolve(os.tmpdir(), `${await uuidV4()}.json`);
   try {
     await fs.writeFile(dstPath, JSON.stringify(payload), 'utf8');
+    const copiedFilePath = await this.lim.cp(path.basename(dstPath), dstPath);
     await this.exec('push', {
-      args: [this.requireUdid('push'), dstPath],
+      args: [this.requireUdid('push'), copiedFilePath],
     });
   } finally {
     await rimraf(dstPath);

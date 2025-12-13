@@ -1,4 +1,5 @@
 import type { SubProcess, TeenProcessExecResult } from 'teen_process';
+import type { Ios } from '@limrun/api';
 
 /**
  * XCRun configuration
@@ -93,6 +94,12 @@ export interface SimctlOpts {
    * By default this path usually equals to ~/Library/Developer/CoreSimulator/Devices
    */
   devicesSetPath?: string | null;
+
+  /**
+   * The Limrun iOS instance client. If provided, it will be used directly
+   * instead of creating a new client from URL and token.
+   */
+  limClient?: Ios.InstanceClient;
 }
 
 /**
@@ -137,11 +144,11 @@ export interface SimCreationOpts {
 }
 
 /**
- * Result type for exec method - either SubProcess for async or TeenProcessExecResult for sync
+ * Result type for exec method - either Ios.SimctlExecution for async or { code: number, stdout: Buffer, stderr: Buffer } for sync
  */
 export type ExecResult<T extends ExecOpts> = T extends AsyncExecOpts
-  ? SubProcess
-  : TeenProcessExecResult<string>;
+  ? Ios.SimctlExecution
+  : { code: number, stdout: string, stderr: string };
 
 /**
  * Boot monitor options

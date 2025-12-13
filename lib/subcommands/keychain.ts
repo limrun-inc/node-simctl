@@ -48,9 +48,12 @@ export async function addRootCertificate (
   const {
     raw = false,
   } = opts;
-  const execMethod = async (certPath: string) => await this.exec('keychain', {
-    args: [this.requireUdid('keychain add-root-cert'), 'add-root-cert', certPath],
-  });
+  const execMethod = async (certPath: string) => {
+    const copiedFilePath = await this.lim.cp(path.basename(certPath), certPath);
+    await this.exec('keychain', {
+      args: [this.requireUdid('keychain add-root-cert'), 'add-root-cert', copiedFilePath],
+    })
+  };
   if (raw) {
     await handleRawPayload(cert, execMethod);
   } else {
@@ -78,9 +81,12 @@ export async function addCertificate (
   const {
     raw = false,
   } = opts;
-  const execMethod = async (certPath: string) => await this.exec('keychain', {
-    args: [this.requireUdid('keychain add-cert'), 'add-cert', certPath],
-  });
+  const execMethod = async (certPath: string) => {
+    const copiedFilePath = await this.lim.cp(path.basename(certPath), certPath);
+    await this.exec('keychain', {
+      args: [this.requireUdid('keychain add-cert'), 'add-cert', copiedFilePath],
+    })
+  };
   if (raw) {
     await handleRawPayload(cert, execMethod);
   } else {

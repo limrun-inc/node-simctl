@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import which from 'which';
+import { Ios } from '@limrun/api';
 import { log, LOG_PREFIX } from './logger';
 import {
   DEFAULT_EXEC_TIMEOUT, getXcrunBinary,
 } from './helpers';
-import { exec as tpExec, SubProcess } from 'teen_process';
 import * as addmediaCommands from './subcommands/addmedia';
 import * as appinfoCommands from './subcommands/appinfo';
 import * as bootCommands from './subcommands/boot';
@@ -29,6 +29,8 @@ import * as spawnCommands from './subcommands/spawn';
 import * as terminateCommands from './subcommands/terminate';
 import * as uiCommands from './subcommands/ui';
 import * as uninstallCommands from './subcommands/uninstall';
+import * as listappsCommands from './subcommands/listapps';
+import * as lsofCommands from './subcommands/lsof';
 import * as locationCommands from './subcommands/location';
 import type {
   XCRun, ExecOpts, SimctlOpts, ExecResult,
@@ -43,12 +45,21 @@ export class Simctl {
   private _udid: string | null;
   private _devicesSetPath: string | null;
 
+  /**
+   * The main Limrun instance client.
+   */
+  lim: Ios.InstanceClient;
+
   constructor (opts: SimctlOpts = {}) {
     this.xcrun = _.cloneDeep(opts.xcrun ?? { path: null });
     this.execTimeout = opts.execTimeout ?? DEFAULT_EXEC_TIMEOUT;
     this.logErrors = opts.logErrors ?? true;
     this._udid = opts.udid ?? null;
     this._devicesSetPath = opts.devicesSetPath ?? null;
+    if (!opts.limClient) {
+      throw new Error('limClient is required');
+    }
+    this.lim = opts.limClient;
   }
 
   set udid (value: string | null) {
@@ -125,8 +136,6 @@ export class Simctl {
     } = opts ?? {} as T;
     // run a particular simctl command
     const args = [
-      'simctl',
-      ...(this.devicesSetPath ? ['--set', this.devicesSetPath] : []),
       subcommand,
       ...initialArgs
     ];
@@ -138,26 +147,9 @@ export class Simctl {
       process.env
     );
 
-    const execOpts: any = {
-      env,
-      encoding,
-    };
-    if (!asynchronous) {
-      execOpts.timeout = timeout || this.execTimeout;
-    }
-    const xcrun = await this.requireXcrun();
     try {
-      let execArgs: [string, string[], any];
-      if (architectures?.length) {
-        const archArgs = _.flatMap(
-          (_.isArray(architectures) ? architectures : [architectures]).map((arch) => ['-arch', arch])
-        );
-        execArgs = ['arch', [...archArgs, xcrun, ...args], execOpts];
-      } else {
-        execArgs = [xcrun, args, execOpts];
-      }
-      // We know what we are doing here - the type system can't handle the dynamic nature
-      return (asynchronous ? new SubProcess(...execArgs) : await tpExec(...execArgs)) as ExecResult<T>;
+      const execution = this.lim.simctl(args, { disconnectOnExit: asynchronous });
+      return (asynchronous ? execution : (await execution.wait())) as ExecResult<T>;
     } catch (e: any) {
       if (!this.logErrors || !logErrors) {
         // if we don't want to see the errors, just throw and allow the calling
@@ -215,6 +207,8 @@ export class Simctl {
   getContentSize = uiCommands.getContentSize;
   setContentSize = uiCommands.setContentSize;
   removeApp = uninstallCommands.removeApp;
+  listApps = listappsCommands.listApps;
+  lsof = lsofCommands.lsof;
 }
 
 export default Simctl;
