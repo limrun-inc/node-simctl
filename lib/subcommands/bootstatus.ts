@@ -3,7 +3,7 @@ import { waitForCondition } from 'asyncbox';
 import _ from 'lodash';
 import type { Simctl } from '../simctl';
 import type { BootMonitorOptions } from '../types';
-import type { SubProcess } from 'teen_process';
+import type { Ios } from '@limrun/api';
 
 /**
  * Start monitoring for boot status of the particular Simulator.
@@ -20,7 +20,7 @@ import type { SubProcess } from 'teen_process';
 export async function startBootMonitor (
   this: Simctl,
   opts: BootMonitorOptions = {}
-): Promise<SubProcess> {
+): Promise<Ios.SimctlExecution> {
     const {
       timeout = 240000,
       onWaitingDataMigration,
@@ -51,10 +51,9 @@ export async function startBootMonitor (
         onWaitingSystemApp();
       }
     };
-    for (const streamName of ['stdout', 'stderr']) {
-      bootMonitor.on(`line-${streamName}`, onStreamLine);
-    }
-    bootMonitor.once('exit', (code, signal) => {
+    bootMonitor.on(`line-stdout`, onStreamLine);
+    bootMonitor.on(`line-stderr`, onStreamLine);
+    bootMonitor.once('exit', (code) => {
       if (timeoutHandler) {
         clearTimeout(timeoutHandler);
       }
@@ -65,7 +64,7 @@ export async function startBootMonitor (
         isBootingFinished = true;
       } else {
         const errMessage = _.isEmpty(status)
-          ? `The simulator booting process has exited with code ${code} by signal ${signal}`
+          ? `The simulator booting process has exited with code ${code}`
           : status.join('\n');
         error = new Error(errMessage);
         if (onError) {
@@ -73,7 +72,6 @@ export async function startBootMonitor (
         }
       }
     });
-    await bootMonitor.start(0);
     const stopMonitor = async () => {
       if (bootMonitor.isRunning) {
         try {

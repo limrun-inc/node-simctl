@@ -45,12 +45,16 @@ export async function addRootCertificate (
   cert: string | Buffer,
   opts: CertOptions = {}
 ): Promise<void> {
+  const lim = await this.requireLimClient();
   const {
     raw = false,
   } = opts;
-  const execMethod = async (certPath: string) => await this.exec('keychain', {
-    args: [this.requireUdid('keychain add-root-cert'), 'add-root-cert', certPath],
-  });
+  const execMethod = async (certPath: string) => {
+    const copiedFilePath = await lim.cp(path.basename(certPath), certPath);
+    await this.exec('keychain', {
+      args: [this.requireUdid('keychain add-root-cert'), 'add-root-cert', copiedFilePath],
+    })
+  };
   if (raw) {
     await handleRawPayload(cert, execMethod);
   } else {
@@ -75,12 +79,16 @@ export async function addCertificate (
   cert: string | Buffer,
   opts: CertOptions = {}
 ): Promise<void> {
+  const lim = await this.requireLimClient();
   const {
     raw = false,
   } = opts;
-  const execMethod = async (certPath: string) => await this.exec('keychain', {
-    args: [this.requireUdid('keychain add-cert'), 'add-cert', certPath],
-  });
+  const execMethod = async (certPath: string) => {
+    const copiedFilePath = await lim.cp(path.basename(certPath), certPath);
+    await this.exec('keychain', {
+      args: [this.requireUdid('keychain add-cert'), 'add-cert', copiedFilePath],
+    })
+  };
   if (raw) {
     await handleRawPayload(cert, execMethod);
   } else {

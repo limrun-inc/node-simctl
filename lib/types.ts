@@ -151,7 +151,7 @@ export interface SimCreationOpts {
  */
 export type ExecResult<T extends ExecOpts> = T extends AsyncExecOpts
   ? Ios.SimctlExecution
-  : { code: number, stdout: Buffer, stderr: Buffer };
+  : { code: number, stdout: string, stderr: string };
 
 /**
  * Boot monitor options

@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import type { Simctl } from '../simctl';
-import type { TeenProcessExecResult, SubProcess } from 'teen_process';
+import type { Ios } from '@limrun/api';
+import { ExecOpts, ExecResult } from '../types';
 
 /**
  * Spawn the particular process on Simulator.
@@ -17,7 +18,7 @@ export async function spawnProcess (
   this: Simctl,
   args: string | string[],
   env: Record<string, any> = {}
-): Promise<TeenProcessExecResult<string>> {
+): Promise<ExecResult<ExecOpts>> {
   if (_.isEmpty(args)) {
     throw new Error('Spawn arguments are required');
   }
@@ -41,15 +42,15 @@ export async function spawnSubProcess (
   this: Simctl,
   args: string | string[],
   env: Record<string, any> = {}
-): Promise<SubProcess> {
+): Promise<Ios.SimctlExecution> {
   if (_.isEmpty(args)) {
     throw new Error('Spawn arguments are required');
   }
 
-  return await this.exec('spawn', {
+  return this.exec('spawn', {
     args: [this.requireUdid('spawn'), ...(_.isArray(args) ? args : [args])],
     env,
     asynchronous: true,
-  }) as SubProcess;
+  });
 }
 

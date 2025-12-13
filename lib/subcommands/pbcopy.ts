@@ -18,18 +18,6 @@ export async function setPasteboard (
   content: string,
   encoding: BufferEncoding = 'utf8'
 ): Promise<void> {
-  const pbCopySubprocess = await this.exec('pbcopy', {
-    args: [this.requireUdid('pbcopy')],
-    asynchronous: true,
-  }) as SubProcess;
-  await pbCopySubprocess.start(0);
-  const exitCodeVerifier = pbCopySubprocess.join();
-  const stdin = pbCopySubprocess.proc?.stdin;
-  if (stdin) {
-    stdin.setDefaultEncoding(encoding);
-    stdin.write(content);
-    stdin.end();
-  }
-  await exitCodeVerifier;
+  throw new Error('setPasteboard is not supported');
 }
 

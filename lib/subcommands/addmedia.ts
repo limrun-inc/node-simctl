@@ -1,5 +1,6 @@
+import path from 'path';
 import type { Simctl } from '../simctl';
-import type { TeenProcessExecResult } from 'teen_process';
+import { ExecOpts, ExecResult } from '../types';
 
 /**
  * Add the particular media file to Simulator's library.
@@ -12,8 +13,10 @@ import type { TeenProcessExecResult } from 'teen_process';
  *                 returns non-zero return code.
  * @throws {Error} If the `udid` instance property is unset
  */
-export async function addMedia (this: Simctl, filePath: string): Promise<TeenProcessExecResult<string>> {
-  return await this.exec('addmedia', {
-    args: [this.requireUdid('addmedia'), filePath],
+export async function addMedia (this: Simctl, filePath: string): Promise<ExecResult<ExecOpts>> {
+  const lim = await this.requireLimClient();
+  const copiedFilePath = await lim.cp(path.basename(filePath), filePath);
+  return this.exec('addmedia', {
+    args: [this.requireUdid('addmedia'), copiedFilePath],
   });
 }
