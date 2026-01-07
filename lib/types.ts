@@ -96,13 +96,10 @@ export interface SimctlOpts {
   devicesSetPath?: string | null;
 
   /**
-   * The URL of the Limrun instance API.
+   * The Limrun iOS instance client. If provided, it will be used directly
+   * instead of creating a new client from URL and token.
    */
-  limInstanceApiUrl?: string;
-  /**
-   * The token for the Limrun instance API.
-   */
-  limInstanceToken?: string;
+  limClient?: Ios.InstanceClient;
 }
 
 /**

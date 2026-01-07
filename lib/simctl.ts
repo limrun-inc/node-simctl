@@ -48,9 +48,7 @@ export class Simctl {
   /**
    * The main Limrun instance client.
    */
-  private _lim: Ios.InstanceClient;
-  private _limInstanceApiUrl: string;
-  private _limInstanceToken: string;
+  lim: Ios.InstanceClient;
 
   constructor (opts: SimctlOpts = {}) {
     this.xcrun = _.cloneDeep(opts.xcrun ?? { path: null });
@@ -58,14 +56,10 @@ export class Simctl {
     this.logErrors = opts.logErrors ?? true;
     this._udid = opts.udid ?? null;
     this._devicesSetPath = opts.devicesSetPath ?? null;
-    if (!opts.limInstanceApiUrl) {
-      throw new Error('limInstanceApiUrl is required');
+    if (!opts.limClient) {
+      throw new Error('limClient is required');
     }
-    if (!opts.limInstanceToken) {
-      throw new Error('limInstanceToken is required');
-    }
-    this._limInstanceApiUrl = opts.limInstanceApiUrl;
-    this._limInstanceToken = opts.limInstanceToken;
+    this.lim = opts.limClient;
   }
 
   set udid (value: string | null) {
@@ -117,25 +111,6 @@ export class Simctl {
     return this.xcrun.path;
   }
 
-  async requireLimClient(createNew = false): Promise<Ios.InstanceClient> {
-    if (this._lim && !createNew) {
-      return this._lim;
-    }
-    if (createNew) {
-      return Ios.createInstanceClient({
-        apiUrl: this._limInstanceApiUrl,
-        token: this._limInstanceToken,
-        logLevel: 'debug',
-      });
-    }
-    this._lim = await Ios.createInstanceClient({
-      apiUrl: this._limInstanceApiUrl,
-      token: this._limInstanceToken,
-      logLevel: 'debug',
-    });
-    return this._lim;
-  }
-
   /**
    * Execute the particular simctl command.
    *
@@ -172,16 +147,8 @@ export class Simctl {
       process.env
     );
 
-    // const execOpts: any = {
-    //   env,
-    //   encoding,
-    // };
-    // if (!asynchronous) {
-    //   execOpts.timeout = timeout || this.execTimeout;
-    // }
-    const lim = await this.requireLimClient(asynchronous);
     try {
-      const execution = lim.simctl(args, { disconnectOnExit: asynchronous });
+      const execution = this.lim.simctl(args, { disconnectOnExit: asynchronous });
       return (asynchronous ? execution : (await execution.wait())) as ExecResult<T>;
     } catch (e: any) {
       if (!this.logErrors || !logErrors) {

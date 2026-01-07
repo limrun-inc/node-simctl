@@ -7,6 +7,5 @@ import type { Simctl } from '../simctl';
  * @returns A promise that resolves to a list of open files.
  */
 export async function lsof(this: Simctl): Promise<Array<{ kind: string, path: string }>> {
-    const lim = await this.requireLimClient();
-    return lim.lsof();;
+    return this.lim.lsof();
 }

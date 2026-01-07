@@ -11,8 +11,7 @@ import type { Simctl } from '../simctl';
  * @throws {Error} If the `udid` instance property is unset
  */
 export async function getScreenshot (this: Simctl): Promise<string> {
-  const lim = await this.requireLimClient();
-  const screenshot = await lim.screenshot();
-  return screenshot.dataUri.replace(/^data:image\/\w+;base64,/, '');
+  const screenshot = await this.lim.screenshot();
+  return screenshot.base64.replace(/^data:image\/\w+;base64,/, '');
 }
 

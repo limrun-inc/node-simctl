@@ -26,11 +26,10 @@ import type { Simctl } from '../simctl';
  * @throws {Error} If the `udid` instance property is unset
  */
 export async function pushNotification (this: Simctl, payload: Record<string, any>): Promise<void> {
-  const lim = await this.requireLimClient();
   const dstPath = path.resolve(os.tmpdir(), `${await uuidV4()}.json`);
   try {
     await fs.writeFile(dstPath, JSON.stringify(payload), 'utf8');
-    const copiedFilePath = await lim.cp(path.basename(dstPath), dstPath);
+    const copiedFilePath = await this.lim.cp(path.basename(dstPath), dstPath);
     await this.exec('push', {
       args: [this.requireUdid('push'), copiedFilePath],
     });

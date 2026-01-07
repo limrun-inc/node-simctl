@@ -14,8 +14,7 @@ import { ExecOpts, ExecResult } from '../types';
  * @throws {Error} If the `udid` instance property is unset
  */
 export async function addMedia (this: Simctl, filePath: string): Promise<ExecResult<ExecOpts>> {
-  const lim = await this.requireLimClient();
-  const copiedFilePath = await lim.cp(path.basename(filePath), filePath);
+  const copiedFilePath = await this.lim.cp(path.basename(filePath), filePath);
   return this.exec('addmedia', {
     args: [this.requireUdid('addmedia'), copiedFilePath],
   });
