@@ -173,7 +173,7 @@ export async function getDevices (
   // even though the simulator is running iOS 26.3.1
   // So, a case where iOS SDK not matching the simulator version is possible and expected.
   log.debug(LOG_PREFIX, `'${forSdk}' does not exist in the list of simctl SDKs. Returning all devices.`);
-  return devices;
+  return _.flatMap(_.values(devices));
 }
 
 /**
