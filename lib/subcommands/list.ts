@@ -166,13 +166,16 @@ export async function getDevices (
     return devices;
   }
   // if a `forSdk` was passed in, return only the corresponding list
-  if (devices[forSdk]) {
+  if (devices[forSdk]?.length) {
     return devices[forSdk];
   }
   // In XCode 26.3, Apple did not ship iOS SDK 26.3 but instead shipped iOS SDK 26.2
   // even though the simulator is running iOS 26.3.1
   // So, a case where iOS SDK not matching the simulator version is possible and expected.
-  log.debug(LOG_PREFIX, `'${forSdk}' does not exist in the list of simctl SDKs. Returning all devices.`);
+  // simctl also lists every installed runtime, including ones without devices. An empty
+  // entry for the host SDK must fall back too, or a host carrying a newer runtime hides
+  // the booted simulator of an older one.
+  log.debug(LOG_PREFIX, `'${forSdk}' has no devices in the list of simctl SDKs. Returning all devices.`);
   return _.flatMap(_.values(devices));
 }
 
