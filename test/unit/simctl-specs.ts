@@ -30,6 +30,10 @@ const devicePayloads = [
   ],
 ];
 
+const devicesEmptyRuntimePayload = {
+  stdout: fs.readFileSync(path.join(testDir, 'fixtures/devices-empty-runtime.json'), 'utf-8'),
+};
+
 describe('simctl', function () {
   let execStub: sinon.SinonStub;
 
@@ -124,6 +128,21 @@ describe('simctl', function () {
 
             const devices = await simctl.getDevices('12.1');
             expect(_.keys(devices).length).to.eql(10);
+          });
+          it('should return devices from all SDKs if the exact SDK has no devices', async function () {
+            execStub.returns(devicesEmptyRuntimePayload);
+
+            const devices = await simctl.getDevices('27.0');
+            expect(devices).to.have.length(1);
+            expect(devices[0].udid).to.eql('85A32498-8FE6-4011-9ADF-69B4B630B485');
+            expect(devices[0].sdk).to.eql('26.4');
+          });
+          it('should return the exact SDK devices when it has some', async function () {
+            execStub.returns(devicesEmptyRuntimePayload);
+
+            const devices = await simctl.getDevices('26.4');
+            expect(devices).to.have.length(1);
+            expect(devices[0].sdk).to.eql('26.4');
           });
         });
         describe('platform defined', function () {

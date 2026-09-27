@@ -1,0 +1,23 @@
+{
+  "devices" : {
+    "com.apple.CoreSimulator.SimRuntime.iOS-27-0" : [
+
+    ],
+    "com.apple.CoreSimulator.SimRuntime.iOS-26-4" : [
+      {
+        "lastBootedAt" : "2026-09-27T10:53:30Z",
+        "dataPath" : "/Users/limrun/work/state/device-set/85A32498-8FE6-4011-9ADF-69B4B630B485/data",
+        "dataPathSize" : 1946157056,
+        "logPath" : "/Users/limrun/Library/Logs/CoreSimulator/85A32498-8FE6-4011-9ADF-69B4B630B485",
+        "udid" : "85A32498-8FE6-4011-9ADF-69B4B630B485",
+        "isAvailable" : true,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro",
+        "state" : "Booted",
+        "name" : "limclone"
+      }
+    ],
+    "com.apple.CoreSimulator.SimRuntime.watchOS-26-4" : [
+
+    ]
+  }
+}
